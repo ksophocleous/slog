@@ -28,6 +28,12 @@
 //#define SLOG_DISABLE_INFO 0
 #include <slog/slog.h>
 
+#ifdef _MSC_VER
+#define unlink _unlink
+#else
+#include <unistd.h>
+#endif
+
 void compare_file_contents(const char* filename, std::string contents, std::string errorstring)
 {
 	std::ifstream file(filename);
@@ -46,7 +52,7 @@ void compare_file_contents(const char* filename, std::string contents, std::stri
 void emptylog(int argc, char* argv[])
 {
 	const char logfilename[] = "emptylog.test.log";
-	if (_unlink(logfilename) != 0 && (errno != ENOENT))
+	if (unlink(logfilename) != 0 && (errno != ENOENT))
 		throw std::runtime_error(strobj() << "emptylog :: failed to delete file '" << logfilename << "'");
 
 	{
