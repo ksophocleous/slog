@@ -187,6 +187,12 @@ std::string logconfig::formatmsg(const logtype& ltype, const std::string& msg)
 
 #pragma warning(disable:4996)
 
+//static 
+void logconfig::set_default_console_print(print_func defaultPrintFunc)
+{
+	logconfig::print_functions["default_console"] = (defaultPrintFunc) ? defaultPrintFunc : logconfig::default_console_print;
+}
+
 void logconfig::default_console_print(const logtype& type, const std::string& line)
 {
 	std::ostream& out = type.usestderr ? std::cerr : std::cout;
@@ -240,4 +246,4 @@ template class logobj<logtype_warn>;
 template class logobj<logtype_error>;
 template class logobj<logtype_verbose>;
 template class logobj<logtype_debug>;
-
+template class logobj<logtype_success>;

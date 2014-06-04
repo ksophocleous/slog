@@ -140,6 +140,7 @@ namespace slog
 
 			static std::string formatmsg(const logtype& ltype, const std::string& msg);
 
+			static void set_default_console_print(print_func defaultPrintFunc);
 			static void default_console_print(const logtype& type, const std::string& line);
 
 			static void get_current_date_time(tm& timedate);
@@ -167,7 +168,7 @@ namespace slog
 		public:
 			logdevice(std::string deviceName, logconfig::print_func printFunc) : m_deviceName(std::move(deviceName))
 			{
-				logconfig::print_functions[deviceName] = printFunc;
+				logconfig::print_functions[m_deviceName] = printFunc;
 			}
 
 			~logdevice()
@@ -302,6 +303,20 @@ namespace slog
 		}
 	};
 
+	struct logtype_success : logtype
+	{
+		static const uint32_t Tag = 0x73756363;
+
+		logtype_success()
+		{
+			enabled = true;
+			name = "succ";
+			priority = 100;
+			tag = Tag;
+			color = consolecolor::Green;
+		}
+	};
+
 	// --------------------------------------------
 
 #if SLOG_DISABLE != 1
@@ -340,15 +355,22 @@ namespace slog
 #define curlogobj_debug nooplogobj
 #endif
 
+#if SLOG_DISABLE_SUCCESS != 1
+#define curlogobj_success curlogobj
+#else
+#define curlogobj_success nooplogobj
+#endif
+
 	typedef curlogobj_info<logtype_info> info;
 	typedef curlogobj_verbose<logtype_verbose> verbose;
 	typedef curlogobj_warn<logtype_warn> warn;
 	typedef curlogobj_error<logtype_error> error;
 	typedef curlogobj_debug<logtype_debug> debug;
+	typedef curlogobj_success<logtype_success> success;
 
 	extern template class logobj<logtype_info>;
 	extern template class logobj<logtype_warn>;
 	extern template class logobj<logtype_error>;
 	extern template class logobj<logtype_verbose>;
-	extern template class logobj<logtype_debug>;
+	extern template class logobj<logtype_success>;
 }; // namespace
