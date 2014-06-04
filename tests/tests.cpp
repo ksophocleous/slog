@@ -116,10 +116,49 @@ void empty_lines_should_print(int argc, char* argv[])
 
 // -------------------------------------------------------------------------------------
 
+#define TIMES 20000
+
 #include <iostream>
+
+void bench(int argc, char* argv[])
+{
+	std::ostringstream ss;
+	
+	slog::logconfig::timestamps = slog::logconfig::print_logtype = false;
+	slog::logconfig::usecolor = false;
+
+	for (int i = 1; i < argc; i++)
+	{
+		ss << argv[i] << " ";
+	}
+
+	if (ss.str().find("-t1") != std::string::npos)
+	{
+		for (uint32_t i = 0; i < TIMES; i++)
+			printf("complex %s %d %f\n", "string", 10, 30.f);
+
+		exit(0);
+	}
+	else if (ss.str().find("-t2") != std::string::npos)
+	{
+		for (uint32_t i = 0; i < TIMES; i++)
+			slog::info() << "complex " << "string" << " " << 10 << " " << 30.001f;
+
+		exit(1);
+	}
+	else if (ss.str().find("-t3") != std::string::npos)
+	{
+		for (uint32_t i = 0; i < TIMES; i++)
+			std::cout << "complex " << "string" << " " << 10 << " " << 30.001f << std::endl;
+
+		exit(1);
+	}
+}
 
 int main(int argc, char* argv[])
 {
+	bench(argc, argv);
+
 	try
 	{
 		emptylog(argc, argv);
