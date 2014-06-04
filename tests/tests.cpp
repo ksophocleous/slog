@@ -28,24 +28,124 @@
 //#define SLOG_DISABLE_INFO 0
 #include <slog/slog.h>
 
-int main(int argc, char* argv[])
+void compare_file_contents(const char* filename, std::string contents, std::string errorstring)
 {
-	slog::logconfig::parse(argc, argv);
+	std::ifstream file(filename);
+	if (file.bad())
+		throw std::runtime_error(strobj() << "compare_file_contents :: file '" << filename << "'");
+
+	std::string value;
+	file >> value;
+
+	if (value.compare(contents) != 0)
+		throw std::runtime_error(strobj() << errorstring);
+}
+
+/// --- tests
+
+void emptylog(int argc, char* argv[])
+{
+	const char logfilename[] = "emptylog.test.log";
+	if (_unlink(logfilename) != 0 && (errno != ENOENT))
+		throw std::runtime_error(strobj() << "emptylog :: failed to delete file '" << logfilename << "'");
 
 	{
-		slog::filelogdevice keep_this_instance_around("logoutput.log", true);
-		
-		slog::info();
-		slog::info() << "---------------- NEW RUN ----------------";
-		slog::info() << "slog version " << slog::getmajorversion() << "." << slog::getminorversion() << "." << slog::getpatchversion();
-
-		slog::error() << "major error: failed to say hello to world";
-		slog::warn() << "warning: this should be yellow";
-		slog::info() << "fyi: life is full of meaningless little lines";
-		slog::verbose() << "verbosity: also known as 'it goes to eleven'";
+		slog::filelogdevice logfile(logfilename, true);
+		slog::info::type.enabled = false;
+		slog::info() << "test";
+		slog::info::type.enabled = true;
 	}
 
-	slog::debug() << "major debug reporting for duty... this log wont make in the log file";
+	compare_file_contents(logfilename, "", "type.enabled = false; failed not to write to log file");
+}
+
+void simple_log_line(int argc, char* argv[])
+{
+	const char thisline[] = "this simple line";
+
+	auto prevtime = slog::logconfig::timestamps;
+	auto prevprintlogtype = slog::logconfig::print_logtype;
+	slog::logconfig::timestamps = false;
+	slog::logconfig::print_logtype = false;
+
+	slog::logconfig::set_default_console_print([&thisline](const slog::logtype& type, const std::string& line)
+	{
+		if (line.compare(thisline) != 0)
+			throw std::runtime_error(strobj() << "simple_log_line :: failed compose a simple log line with all prefixes removed");
+	});
+
+	slog::info() << thisline;
+
+	slog::logconfig::timestamps = prevtime;
+	slog::logconfig::print_logtype = prevprintlogtype;
+	slog::logconfig::set_default_console_print(nullptr);
+}
+
+void default_verbose_debug_off(int argc, char* argv[])
+{
+	slog::logconfig::set_default_console_print([](const slog::logtype& type, const std::string& line)
+	{
+		if (line.length() > 0)
+			throw std::runtime_error(strobj() << "default_verbose_debug_off :: default state of verbose and debug is not disabled");
+	});
+
+	slog::debug() << "testing";
+	slog::verbose() << "testing again";
+
+	slog::logconfig::set_default_console_print(nullptr);
+}
+
+void empty_lines_should_print(int argc, char* argv[])
+{
+	slog::logconfig::set_default_console_print([](const slog::logtype& type, const std::string& line)
+	{
+		if (line.length() == 0)
+			throw std::runtime_error(strobj() << "empty_lines_should_print :: empty info line printed nothing");
+	});
+
+	slog::info();
+
+	slog::logconfig::set_default_console_print(nullptr);
+}
+
+// -------------------------------------------------------------------------------------
+
+#include <iostream>
+
+int main(int argc, char* argv[])
+{
+	try
+	{
+		emptylog(argc, argv);
+		simple_log_line(argc, argv);
+		default_verbose_debug_off(argc, argv);
+		empty_lines_should_print(argc, argv);
+
+		slog::logconfig::parse(argc, argv);
+
+		{
+			slog::filelogdevice keep_this_instance_around("logoutput.log", true);
+
+			slog::info();
+			slog::info() << "---------------- NEW RUN ----------------";
+			slog::info() << "slog version " << slog::getmajorversion() << "." << slog::getminorversion() << "." << slog::getpatchversion();
+
+			slog::error() << "major error: failed to say hello to world";
+			slog::warn() << "warning: this should be yellow";
+			slog::info() << "fyi: life is full of meaningless little lines";
+			slog::verbose() << "verbosity: also known as 'it goes to eleven'";
+			slog::success() << "success: you only see this when you get lucky";
+		}
+
+		slog::debug() << "major debug reporting for duty... this log wont make in the log file";
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << "Test failed: " << e.what() << std::endl;
+		return -1;
+	}
 	
+	std::cout << "All tests succeeded" << std::endl;
+
 	return 0;
 }
