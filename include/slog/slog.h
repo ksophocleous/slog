@@ -103,6 +103,8 @@ namespace slog
 #endif
 	};
 
+	template<typename TYPE> TYPE nooplogobj<TYPE>::type;
+
 	enum class consolecolor : uint8_t
 	{
 		White,
@@ -229,6 +231,8 @@ namespace slog
 #endif
 	};
 
+	template<typename TYPE> TYPE logobj<TYPE>::type;
+
 	// --------------------------------------------
 
 	struct logtype_info : logtype
@@ -341,4 +345,10 @@ namespace slog
 	typedef curlogobj_warn<logtype_warn> warn;
 	typedef curlogobj_error<logtype_error> error;
 	typedef curlogobj_debug<logtype_debug> debug;
+
+	extern template class logobj<logtype_info>;
+	extern template class logobj<logtype_warn>;
+	extern template class logobj<logtype_error>;
+	extern template class logobj<logtype_verbose>;
+	extern template class logobj<logtype_debug>;
 }; // namespace

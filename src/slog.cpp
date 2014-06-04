@@ -234,8 +234,10 @@ void logconfig::default_console_print(const logtype& type, const std::string& li
 #endif
 }
 
-logtype_info info::type;
-logtype_warn warn::type;
-logtype_error error::type;
-logtype_verbose verbose::type;
-logtype_debug debug::type;
+// template instantiation
+template class logobj<logtype_info>;
+template class logobj<logtype_warn>;
+template class logobj<logtype_error>;
+template class logobj<logtype_verbose>;
+template class logobj<logtype_debug>;
+

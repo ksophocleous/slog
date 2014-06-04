@@ -7,6 +7,10 @@ set(version_major 0)
 set(version_minor 8)
 set(version_patch 0)
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+	set(CMAKE_CXX_FLAGS "-std=c++11")
+endif()
+
 if(MSVC)
 	foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
 		string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
