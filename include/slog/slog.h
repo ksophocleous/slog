@@ -73,6 +73,11 @@ inline std::ostream& operator<< (std::ostream& out, const std::exception& e)
 
 namespace slog
 {
+	std::string getversion();
+	uint32_t getmajorversion();
+	uint32_t getminorversion();
+	uint32_t getpatchversion();
+
 	// a null logobj that all log object get replaced with when they are compiled out
 	// see SLOG_DISABLE_*
 	template<typename TYPE>

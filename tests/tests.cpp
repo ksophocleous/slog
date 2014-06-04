@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
 		
 		slog::info();
 		slog::info() << "---------------- NEW RUN ----------------";
+		slog::info() << "slog version " << slog::getmajorversion() << "." << slog::getminorversion() << "." << slog::getpatchversion();
 
 		slog::error() << "major error: failed to say hello to world";
 		slog::warn() << "warning: this should be yellow";

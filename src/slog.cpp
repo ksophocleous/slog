@@ -36,6 +36,11 @@
 
 using namespace slog;
 
+std::string slog::getversion()		{ return strobj() << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH; }
+uint32_t slog::getmajorversion()	{ return VERSION_MAJOR; }
+uint32_t slog::getminorversion()	{ return VERSION_MINOR; }
+uint32_t slog::getpatchversion()	{ return VERSION_PATCH; }
+
 class static_init
 {
 	public:
