@@ -271,6 +271,7 @@ namespace slog
 			name = "errr";
 			priority = 200;
 			tag = Tag;
+			usestderr = true;
 			color = consolecolor::Red;
 		}
 	};
