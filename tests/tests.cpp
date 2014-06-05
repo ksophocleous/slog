@@ -34,6 +34,9 @@
 #include <unistd.h>
 #endif
 
+#include <cerrno>
+#include <cstdlib>
+
 void compare_file_contents(const char* filename, std::string contents, std::string errorstring)
 {
 	std::ifstream file(filename);

@@ -33,6 +33,7 @@
 #include <ctime>
 #include <iostream>
 #include <iomanip>
+#include <cstdlib>
 
 using namespace slog;
 
