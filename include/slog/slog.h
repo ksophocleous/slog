@@ -31,6 +31,7 @@
 #include <functional>
 #include <fstream>
 #include <map>
+#include <stdexcept>
 
 #ifndef SLOG_NO_COPY
 #define SLOG_NO_COPY 1
@@ -201,13 +202,19 @@ namespace slog
 
 			~logobj()
 			{
-				if (type.enabled)
+				try
 				{
-					std::string line = logconfig::formatmsg(type, ss.str());
+					if (type.enabled)
+					{
+						std::string line = logconfig::formatmsg(type, ss.str());
 
-					for (auto& each : logconfig::print_functions)
-						if (each.second)
-							each.second(type, line);
+						for (auto& each : logconfig::print_functions)
+							if (each.second)
+								each.second(type, line);
+					}
+				}
+				catch (...)
+				{
 				}
 			}
 
@@ -320,54 +327,41 @@ namespace slog
 
 	// --------------------------------------------
 
-#if SLOG_DISABLE != 1
-#define curlogobj logobj
+#if SLOG_DISABLE_INFO != 1 && SLOG_DISABLE != 1
+	typedef logobj<logtype_info> info;
 #else
-#define curlogobj nooplogobj
+	typedef nooplogobj<logtype_info> info;
 #endif
 
-#if SLOG_DISABLE_INFO != 1
-#define curlogobj_info curlogobj
+#if SLOG_DISABLE_WARN != 1 && SLOG_DISABLE != 1
+	typedef logobj<logtype_warn> warn;
 #else
-#define curlogobj_info nooplogobj
+	typedef nooplogobj<logtype_warn> warn;
 #endif
 
-#if SLOG_DISABLE_WARN != 1
-#define curlogobj_warn curlogobj
+#if SLOG_DISABLE_VERBOSE != 1 && SLOG_DISABLE != 1
+	typedef logobj<logtype_verbose> verbose;
 #else
-#define curlogobj_warn nooplogobj
+	typedef nooplogobj<logtype_verbose> verbose;
 #endif
 
-#if SLOG_DISABLE_VERBOSE != 1
-#define curlogobj_verbose curlogobj
+#if SLOG_DISABLE_ERROR != 1 && SLOG_DISABLE != 1
+	typedef logobj<logtype_error> error;
 #else
-#define curlogobj_verbose nooplogobj
+	typedef nooplogobj<logtype_error> error;
 #endif
 
-#if SLOG_DISABLE_ERROR != 1
-#define curlogobj_error curlogobj
+#if SLOG_DISABLE_DEBUG != 1 && SLOG_DISABLE != 1
+	typedef logobj<logtype_debug> debug;
 #else
-#define curlogobj_error nooplogobj
+	typedef nooplogobj<logtype_debug> debug;
 #endif
 
-#if SLOG_DISABLE_DEBUG != 1
-#define curlogobj_debug curlogobj
+#if SLOG_DISABLE_SUCCESS != 1 && SLOG_DISABLE != 1
+	typedef logobj<logtype_success> success;
 #else
-#define curlogobj_debug nooplogobj
+	typedef nooplogobj<logtype_success> success;
 #endif
-
-#if SLOG_DISABLE_SUCCESS != 1
-#define curlogobj_success curlogobj
-#else
-#define curlogobj_success nooplogobj
-#endif
-
-	typedef curlogobj_info<logtype_info> info;
-	typedef curlogobj_verbose<logtype_verbose> verbose;
-	typedef curlogobj_warn<logtype_warn> warn;
-	typedef curlogobj_error<logtype_error> error;
-	typedef curlogobj_debug<logtype_debug> debug;
-	typedef curlogobj_success<logtype_success> success;
 
 	extern template class logobj<logtype_info>;
 	extern template class logobj<logtype_warn>;
