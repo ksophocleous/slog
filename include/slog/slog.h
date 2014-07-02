@@ -40,6 +40,15 @@
 #define SLOG_EXCEPTION_PRINT 1
 #endif
 
+#ifndef SLOG_STROBJ_NAMESPACE
+#define SLOG_STROBJ_NAMESPACE 0
+#endif
+
+#if SLOG_STROBJ_NAMESPACE == 1
+namespace slog
+{
+#endif if
+
 class strobj
 {
 	public:
@@ -63,13 +72,9 @@ class strobj
 		std::ostringstream ss;
 };
 
-#if SLOG_EXCEPTION_PRINT == 1
-inline std::ostream& operator<< (std::ostream& out, const std::exception& e)
-{
-	out << e.what();
-	return out;
+#if SLOG_STROBJ_NAMESPACE == 1
 }
-#endif
+#endif if
 
 namespace slog
 {
@@ -158,6 +163,7 @@ namespace slog
 			const logconfig* _prev_config;
 	};
 
+#if SLOG_EXCEPTION_PRINT == 1
 	inline std::ostream& operator<< (std::ostream& out, const logtype& lt)
 	{
 		if (logconfig::_cur_config->print_priority)
@@ -165,6 +171,7 @@ namespace slog
 		out << lt.name;
 		return out;
 	}
+#endif
 
 	//---------------------------------------------------------------------
 
@@ -239,6 +246,12 @@ namespace slog
 			logobj& operator=(const logobj&);
 #endif
 	};
+
+	inline std::ostream& operator<< (std::ostream& out, const std::exception& exception)
+	{
+		out << exception.what();
+		return out;
+	}
 
 	template<typename TYPE> TYPE logobj<TYPE>::type;
 
