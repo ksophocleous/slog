@@ -108,55 +108,60 @@ namespace slog
 
 	enum class consolecolor : uint8_t
 	{
-		White,
-		Gray,
-		Red,
-		Green,
-		Blue,
-		Yellow,
-		Magenta,
-		Cyan,
+		white,
+		gray,
+		red,
+		green,
+		blue,
+		yellow,
+		magenta,
+		cyan,
 	};
 
 	struct logtype
 	{
-		logtype() : name("unnamed"), enabled(true), priority(0), tag(0), color(consolecolor::Gray) { }
+		logtype() : name("unnamed"), enabled(true), priority(0), tag(0), color(consolecolor::gray) { }
 
 		logtype(const char* _name, uint32_t _prio, uint32_t _tag, consolecolor _color) : enabled(true), name(_name), priority(_prio), tag(_tag), color(_color) {}
 
 		bool usestderr;
 		uint32_t tag;
 		uint32_t priority;
-		const char* name;
+		std::string name;
 		bool enabled;
 		consolecolor color;
 	};
 
+	class logdevice;
+	class logdevice_console;
+
 	class logconfig
 	{
 		public:
-			typedef std::function<void(const logtype& ltype, const std::string& msg)> print_func;
+			logconfig();
+			logconfig(int argc, char* argv[]);
+			~logconfig();
 
-			static void parse(int argc, char* argv[]);
+			void parse(int argc, char* argv[]);
 
 			static std::string formatmsg(const logtype& ltype, const std::string& msg);
 
-			static void set_default_console_print(print_func defaultPrintFunc);
-			static void default_console_print(const logtype& type, const std::string& line);
+			bool usecolor;
+			bool timestamps;
+			bool print_logtype;
+			bool print_priority;
 
-			static void get_current_date_time(tm& timedate);
+			static std::map<std::string, logdevice*> print_functions;
 
-			static bool usecolor;
-			static bool timestamps;
-			static bool print_logtype;
-			static bool print_priority;
+			static const logconfig* _cur_config;
 
-			static std::map<std::string, print_func> print_functions;
+		private:
+			const logconfig* _prev_config;
 	};
 
 	inline std::ostream& operator<< (std::ostream& out, const logtype& lt)
 	{
-		if (logconfig::print_priority)
+		if (logconfig::_cur_config->print_priority)
 			out << lt.priority << "|";
 		out << lt.name;
 		return out;
@@ -167,29 +172,25 @@ namespace slog
 	class logdevice
 	{
 		public:
-			logdevice(std::string deviceName, logconfig::print_func printFunc) : m_deviceName(std::move(deviceName))
+			logdevice(std::string deviceName) : m_deviceName(std::move(deviceName))
 			{
-				logconfig::print_functions[m_deviceName] = printFunc;
+				_prev_device = logconfig::print_functions[m_deviceName];
+				logconfig::print_functions[m_deviceName] = this;
 			}
 
 			~logdevice()
 			{
-				logconfig::print_functions.erase(m_deviceName);
+				if (_prev_device)
+					logconfig::print_functions[m_deviceName] = _prev_device;
+				else
+					logconfig::print_functions.erase(m_deviceName);
 			}
+
+			virtual void writelogline(const slog::logtype& type, const std::string& line) = 0;
 
 		private:
 			std::string m_deviceName;
-	};
-
-	class filelogdevice : slog::logdevice
-	{
-		public:
-			filelogdevice(const std::string& filename, bool bAppend = false);
-
-			void writefile(const slog::logtype& type, const std::string& line);
-
-		private:
-			std::ofstream m_file;
+			logdevice* _prev_device;
 	};
 	
 	//---------------------------------------------------------------------
@@ -210,11 +211,12 @@ namespace slog
 
 						for (auto& each : logconfig::print_functions)
 							if (each.second)
-								each.second(type, line);
-					}
+								each.second->writelogline(type, line);
+					}																			
 				}
 				catch (...)
 				{
+					std::cerr << "logobj caught an exception most likely thrown by a writelogline" << std::endl;
 				}
 			}
 
@@ -252,7 +254,7 @@ namespace slog
 			name = "info";
 			priority = 100;
 			tag = Tag;
-			color = consolecolor::White;
+			color = consolecolor::white;
 		}
 	};
 
@@ -265,7 +267,7 @@ namespace slog
 			name = "warn";
 			priority = 150;
 			tag = Tag;
-			color = consolecolor::Yellow;
+			color = consolecolor::yellow;
 		}
 	};
 
@@ -279,7 +281,7 @@ namespace slog
 			priority = 200;
 			tag = Tag;
 			usestderr = true;
-			color = consolecolor::Red;
+			color = consolecolor::red;
 		}
 	};
 
@@ -293,7 +295,7 @@ namespace slog
 			name = "verb";
 			priority = 50;
 			tag = Tag;
-			color = consolecolor::Cyan;
+			color = consolecolor::cyan;
 		}
 	};
 
@@ -307,7 +309,7 @@ namespace slog
 			name = "debg";
 			priority = 50;
 			tag = Tag;
-			color = consolecolor::Gray;
+			color = consolecolor::gray;
 		}
 	};
 
@@ -321,7 +323,7 @@ namespace slog
 			name = "succ";
 			priority = 100;
 			tag = Tag;
-			color = consolecolor::Green;
+			color = consolecolor::green;
 		}
 	};
 

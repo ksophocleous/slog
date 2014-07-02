@@ -24,9 +24,13 @@
 //
 //================================================================================
 
-//#define SLOG_DISABLE 0
-//#define SLOG_DISABLE_INFO 0
+//#define SLOG_DISABLE 1
+//#define SLOG_DISABLE_INFO 1
+
 #include <slog/slog.h>
+#include <slog/slog_logdevice_file.h>
+#include <slog/slog_logdevice_console.h>
+#include <slog/slog_logdevice_custom_function.h>
 
 #ifdef _MSC_VER
 #define unlink _unlink
@@ -59,7 +63,7 @@ void emptylog(int argc, char* argv[])
 		throw std::runtime_error(strobj() << "emptylog :: failed to delete file '" << logfilename << "'");
 
 	{
-		slog::filelogdevice logfile(logfilename, true);
+		slog::logdevice_file logfile(logfilename, true);
 		slog::info::type.enabled = false;
 		slog::info() << "test";
 		slog::info::type.enabled = true;
@@ -72,49 +76,43 @@ void simple_log_line(int argc, char* argv[])
 {
 	const char thisline[] = "this simple line";
 
-	auto prevtime = slog::logconfig::timestamps;
-	auto prevprintlogtype = slog::logconfig::print_logtype;
-	slog::logconfig::timestamps = false;
-	slog::logconfig::print_logtype = false;
+	slog::logconfig curconfig;
+	curconfig.timestamps = false;
+	curconfig.print_logtype = false;
 
-	slog::logconfig::set_default_console_print([&thisline](const slog::logtype& type, const std::string& line)
-	{
-		if (line.compare(thisline) != 0)
-			throw std::runtime_error(strobj() << "simple_log_line :: failed compose a simple log line with all prefixes removed");
-	});
+	slog::logdevice_custom_function customlog("console", 
+		[&thisline](const slog::logtype& type, const std::string& line)
+		{
+			if (line.compare(thisline) != 0)
+				throw std::runtime_error(strobj() << "simple_log_line :: failed compose a simple log line with all prefixes removed");
+		});
 
 	slog::info() << thisline;
-
-	slog::logconfig::timestamps = prevtime;
-	slog::logconfig::print_logtype = prevprintlogtype;
-	slog::logconfig::set_default_console_print(nullptr);
 }
 
 void default_verbose_debug_off(int argc, char* argv[])
 {
-	slog::logconfig::set_default_console_print([](const slog::logtype& type, const std::string& line)
-	{
-		if (line.length() > 0)
-			throw std::runtime_error(strobj() << "default_verbose_debug_off :: default state of verbose and debug is not disabled");
-	});
+	slog::logdevice_custom_function customlog("console",
+		[](const slog::logtype& type, const std::string& line)
+		{
+			if (line.length() > 0)
+				throw std::runtime_error(strobj() << "default_verbose_debug_off :: default state of verbose and debug is not disabled");
+		});
 
 	slog::debug() << "testing";
 	slog::verbose() << "testing again";
-
-	slog::logconfig::set_default_console_print(nullptr);
 }
 
 void empty_lines_should_print(int argc, char* argv[])
 {
-	slog::logconfig::set_default_console_print([](const slog::logtype& type, const std::string& line)
-	{
-		if (line.length() == 0)
-			throw std::runtime_error(strobj() << "empty_lines_should_print :: empty info line printed nothing");
-	});
+	slog::logdevice_custom_function customlog("console",
+		[](const slog::logtype& type, const std::string& line)
+		{
+			if (line.length() == 0)
+				throw std::runtime_error(strobj() << "empty_lines_should_print :: empty info line printed nothing (must print prefixes since they are enabled)");
+		});
 
 	slog::info();
-
-	slog::logconfig::set_default_console_print(nullptr);
 }
 
 // -------------------------------------------------------------------------------------
@@ -127,8 +125,8 @@ void bench(int argc, char* argv[])
 {
 	std::ostringstream ss;
 	
-	slog::logconfig::timestamps = slog::logconfig::print_logtype = false;
-	slog::logconfig::usecolor = false;
+	slog::logconfig curconfig;
+	curconfig.timestamps = curconfig.print_logtype = curconfig.usecolor = false;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -169,10 +167,12 @@ int main(int argc, char* argv[])
 		default_verbose_debug_off(argc, argv);
 		empty_lines_should_print(argc, argv);
 
-		slog::logconfig::parse(argc, argv);
+		slog::logconfig benchconfig(argc, argv);
+		slog::verbose::type.enabled = true;
+		slog::debug::type.enabled = true;
 
 		{
-			slog::filelogdevice keep_this_instance_around("logoutput.log", true);
+			slog::logdevice_file keep_this_instance_around("logoutput.log", true);
 
 			slog::info();
 			slog::info() << "---------------- NEW RUN ----------------";
@@ -182,18 +182,19 @@ int main(int argc, char* argv[])
 			slog::warn() << "warning: this should be yellow";
 			slog::info() << "fyi: life is full of meaningless little lines";
 			slog::verbose() << "verbosity: also known as 'it goes to eleven'";
+			slog::debug() << "debugging: for when verbose just isn't enough";
 			slog::success() << "success: you only see this when you get lucky";
 		}
 
 		slog::debug() << "major debug reporting for duty... this log wont make in the log file";
+
+		slog::success() << "all tests passed";
+
+		return 0;
 	}
 	catch (std::exception& e)
 	{
 		std::cerr << "Test failed: " << e.what() << std::endl;
 		return -1;
 	}
-	
-	std::cout << "All tests succeeded" << std::endl;
-
-	return 0;
 }

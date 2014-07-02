@@ -5,7 +5,7 @@ project(${libname} CXX)
 
 set(version_major 0)
 set(version_minor 8)
-set(version_patch 0)
+set(version_patch 5)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "-std=c++11")
@@ -31,10 +31,17 @@ set(libtype STATIC)
 
 set(src
 	"src/slog.cpp"
-	"src/slog_logdevice_file.cpp")
+	"src/slog_logdevice_file.cpp"
+	"src/slog_logdevice_custom_function.cpp"
+	"src/slog_logdevice_console.cpp"
+	)
 
 set(hdr_public
-	"include/slog/slog.h")
+	"include/slog/slog.h"
+	"include/slog/slog_logdevice_custom_function.h"
+	"include/slog/slog_logdevice_file.h"
+	"include/slog/slog_logdevice_console.h"
+	)
 
 list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/include")
 list(APPEND compile_defines "VERSION_MAJOR=${version_major}")

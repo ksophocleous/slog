@@ -24,19 +24,22 @@
 //
 //================================================================================
 
-#include "slog/slog_logdevice_file.h"
+#pragma once
 
-using namespace slog;
+#include "slog.h"
 
-logdevice_file::logdevice_file(const std::string& filename, bool bAppend) : logdevice("logdevice_file")
+namespace slog
 {
-	auto mode = (bAppend) ? (std::ios::out | std::ios::app) : std::ios::out;
-	m_file.open(filename.c_str(), mode);
-	if (m_file.good() == false)
-		throw std::runtime_error(strobj() << "failed to open log file '" << filename << "' for write");
-}
+	class logdevice_custom_function : logdevice
+	{
+		public:
+			typedef std::function<void(const logtype& ltype, const std::string& msg)> cpf;
 
-void logdevice_file::writelogline(const logtype& type, const std::string& line)
-{
-	m_file << line << std::endl;
-}
+			logdevice_custom_function(const std::string& pfname, cpf pf);
+
+			virtual void writelogline(const slog::logtype& type, const std::string& line) override;
+
+		private:
+			cpf _pf;
+	};
+};
