@@ -18,7 +18,8 @@ int main(int argc, char* argv[])
     
     {
         slog::logdevice_file keep_this_instance_around("logoutput.log"); 
-        warn() << "warning: this should print on console yellow but it will also appear in the log file";
+        warn() << "warning: this should print on console yellow but";
+        warn() << "it will also appear in the log file";
     }
     
     return 0;
