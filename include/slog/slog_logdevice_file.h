@@ -28,6 +28,8 @@
 
 #include "slog.h"
 
+#include <fstream>
+
 namespace slog
 {
 	class logdevice_file : logdevice

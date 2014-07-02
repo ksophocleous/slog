@@ -28,6 +28,8 @@
 
 #include "slog.h"
 
+#include <functional>
+
 namespace slog
 {
 	class logdevice_custom_function : logdevice
