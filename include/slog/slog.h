@@ -47,7 +47,7 @@
 #if SLOG_STROBJ_NAMESPACE == 1
 namespace slog
 {
-#endif if
+#endif
 
 class strobj
 {
@@ -74,7 +74,7 @@ class strobj
 
 #if SLOG_STROBJ_NAMESPACE == 1
 }
-#endif if
+#endif
 
 namespace slog
 {
