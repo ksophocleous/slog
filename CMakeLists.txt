@@ -25,7 +25,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-option(BUILD_TESTS "Build tests" ON)
+option(SLOG_BUILD_TESTS "Build tests" ON)
 
 set(libtype STATIC)
 
@@ -55,7 +55,7 @@ set_target_properties(${libname} PROPERTIES
 	VERSION "${version_major}.${version_minor}.${version_patch}"
 	COMPILE_DEFINITIONS "${compile_defines}")
 
-if(BUILD_TESTS)
+if(SLOG_BUILD_TESTS)
 	add_executable(tests "tests/tests.cpp")
 	set_target_properties(tests PROPERTIES
 		INCLUDE_DIRECTORIES "${include_dirs}")
