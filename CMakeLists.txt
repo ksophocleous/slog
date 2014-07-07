@@ -56,10 +56,11 @@ set_target_properties(${libname} PROPERTIES
 	COMPILE_DEFINITIONS "${compile_defines}")
 
 if(SLOG_BUILD_TESTS)
-	add_executable(tests "tests/tests.cpp")
-	set_target_properties(tests PROPERTIES
+	set(testname "slog_tests")
+	add_executable(${testname} "tests/tests.cpp")
+	set_target_properties(${testname} PROPERTIES
 		INCLUDE_DIRECTORIES "${include_dirs}")
-	target_link_libraries(tests ${libname})
+	target_link_libraries(${testname} ${libname})
 endif()
 
 install(TARGETS ${libname}
