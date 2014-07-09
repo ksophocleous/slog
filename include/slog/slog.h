@@ -76,6 +76,9 @@ class strobj
 }
 #endif
 
+#define _stringify(_s) #_s
+#define stringify(_s) _stringify(_s)
+
 namespace slog
 {
 	std::string getversion();
