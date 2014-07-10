@@ -52,14 +52,13 @@ add_library(${libname} ${libtype} ${src} ${hdr_public})
 set_target_properties(${libname} PROPERTIES
 	PUBLIC_HEADER "${hdr_public}"
 	INCLUDE_DIRECTORIES "${include_dirs}"
+	INTERFACE_INCLUDE_DIRECTORIES "${include_dirs}"
 	VERSION "${version_major}.${version_minor}.${version_patch}"
 	COMPILE_DEFINITIONS "${compile_defines}")
 
 if(SLOG_BUILD_TESTS)
 	set(testname "slog_tests")
-	add_executable(${testname} "tests/tests.cpp")
-	set_target_properties(${testname} PROPERTIES
-		INCLUDE_DIRECTORIES "${include_dirs}")
+	add_executable(${testname} EXCLUDE_FROM_ALL "tests/tests.cpp")
 	target_link_libraries(${testname} ${libname})
 endif()
 
@@ -67,4 +66,4 @@ install(TARGETS ${libname}
 	LIBRARY DESTINATION lib COMPONENT lib
 	ARCHIVE DESTINATION lib COMPONENT lib
 	RUNTIME DESTINATION bin COMPONENT bin
-	PUBLIC_HEADER DESTINATION include COMPONENT dev)
+	PUBLIC_HEADER DESTINATION include/slog COMPONENT dev)
