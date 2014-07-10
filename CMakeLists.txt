@@ -47,23 +47,26 @@ list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/include")
 list(APPEND compile_defines "VERSION_MAJOR=${version_major}")
 list(APPEND compile_defines "VERSION_MINOR=${version_minor}")
 list(APPEND compile_defines "VERSION_PATCH=${version_patch}")
-add_library(${libname} ${libtype} ${src} ${hdr_public})
 
-set_target_properties(${libname} PROPERTIES
-	PUBLIC_HEADER "${hdr_public}"
-	INCLUDE_DIRECTORIES "${include_dirs}"
-	INTERFACE_INCLUDE_DIRECTORIES "${include_dirs}"
-	VERSION "${version_major}.${version_minor}.${version_patch}"
-	COMPILE_DEFINITIONS "${compile_defines}")
+if (NOT TARGET ${libname})
+	add_library(${libname} ${libtype} ${src} ${hdr_public})
 
-if(SLOG_BUILD_TESTS)
+	set_target_properties(${libname} PROPERTIES
+		PUBLIC_HEADER "${hdr_public}"
+		INCLUDE_DIRECTORIES "${include_dirs}"
+		INTERFACE_INCLUDE_DIRECTORIES "${include_dirs}"
+		VERSION "${version_major}.${version_minor}.${version_patch}"
+		COMPILE_DEFINITIONS "${compile_defines}")
+
 	set(testname "slog_tests")
-	add_executable(${testname} EXCLUDE_FROM_ALL "tests/tests.cpp")
-	target_link_libraries(${testname} ${libname})
-endif()
+	if(SLOG_BUILD_TESTS)
+		add_executable(${testname} EXCLUDE_FROM_ALL "tests/tests.cpp")
+		target_link_libraries(${testname} ${libname})
+	endif()
 
-install(TARGETS ${libname}
-	LIBRARY DESTINATION lib COMPONENT lib
-	ARCHIVE DESTINATION lib COMPONENT lib
-	RUNTIME DESTINATION bin COMPONENT bin
-	PUBLIC_HEADER DESTINATION include/slog COMPONENT dev)
+	install(TARGETS ${libname}
+		LIBRARY DESTINATION lib COMPONENT lib
+		ARCHIVE DESTINATION lib COMPONENT lib
+		RUNTIME DESTINATION bin COMPONENT bin
+		PUBLIC_HEADER DESTINATION include/slog COMPONENT dev)
+endif()
