@@ -78,7 +78,8 @@ logdevice_console::logdevice_console() : logdevice("console")
 	// for example you can launch a %comspec% terminal from a mintty terminal and the %comspec% will have the environment variable TERM set to xterm
 	// but of course %comspec% does not support ANSI color codes
 	// I don't know of an easy way to identify that the console is %comspec% or not
-	const std::string terminal = getenv("TERM");
+	const char* envvar = getenv("TERM");
+	const std::string terminal = envvar ? envvar : "";
 	_xterm_console = (terminal.compare("xterm") == 0);
 
 #ifdef _WIN32
