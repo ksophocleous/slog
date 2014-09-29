@@ -44,6 +44,16 @@
 #define SLOG_STROBJ_NAMESPACE 0
 #endif
 
+// also disable for projects that include this building on visual studio 10 and lower
+#if _MSC_VER <= 1600
+	#pragma warning(disable:4482) // nonstandard extension used: enum 'slog::consolecolor' used in qualified name
+#endif
+
+#if _MSC_VER <= 1600
+	#pragma warning(push)
+	#pragma warning(disable:4231) // disable warnings on extern before template instantiation
+#endif	
+
 #if SLOG_STROBJ_NAMESPACE == 1
 namespace slog
 {
@@ -113,7 +123,11 @@ namespace slog
 
 	template<typename TYPE> TYPE nooplogobj<TYPE>::type;
 
+#if defined(_MSC_VER) && _MSC_VER <= 1600
+	enum consolecolor
+#else
 	enum class consolecolor : uint8_t
+#endif
 	{
 		white,
 		gray,
@@ -177,23 +191,11 @@ namespace slog
 #endif
 
 	//---------------------------------------------------------------------
-
 	class logdevice
 	{
 		public:
-			logdevice(std::string deviceName) : m_deviceName(std::move(deviceName))
-			{
-				_prev_device = logconfig::print_functions[m_deviceName];
-				logconfig::print_functions[m_deviceName] = this;
-			}
-
-			~logdevice()
-			{
-				if (_prev_device)
-					logconfig::print_functions[m_deviceName] = _prev_device;
-				else
-					logconfig::print_functions.erase(m_deviceName);
-			}
+			logdevice(std::string deviceName);
+			virtual ~logdevice();
 
 			virtual void writelogline(const slog::logtype& type, const std::string& line) = 0;
 
@@ -218,10 +220,11 @@ namespace slog
 					{
 						std::string line = logconfig::formatmsg(type, ss.str());
 
-						for (auto& each : logconfig::print_functions)
-							if (each.second)
-								each.second->writelogline(type, line);
-					}																			
+						//for (auto& each : logconfig::print_functions)
+						for (auto& each = logconfig::print_functions.begin(); each != logconfig::print_functions.end(); ++each)
+							if (each->second)
+								each->second->writelogline(type, line);
+					}
 				}
 				catch (...)
 				{
@@ -263,83 +266,37 @@ namespace slog
 	struct logtype_info : logtype
 	{
 		static const uint32_t Tag = 0x696e666f;
-
-		logtype_info()
-		{
-			name = "info";
-			priority = 100;
-			tag = Tag;
-			color = consolecolor::white;
-		}
+		logtype_info();
 	};
 
 	struct logtype_warn : logtype
 	{
 		static const uint32_t Tag = 0x7761726e;
-
-		logtype_warn()
-		{
-			name = "warn";
-			priority = 150;
-			tag = Tag;
-			color = consolecolor::yellow;
-		}
+		logtype_warn();
 	};
 
 	struct logtype_error : logtype
 	{
 		static const uint32_t Tag = 0x6572726f;
-
-		logtype_error()
-		{
-			name = "errr";
-			priority = 200;
-			tag = Tag;
-			usestderr = true;
-			color = consolecolor::red;
-		}
+		logtype_error();
 	};
 
 	struct logtype_verbose : logtype
 	{
 		static const uint32_t Tag = 0x76657262;
-
-		logtype_verbose()
-		{
-			enabled = false;
-			name = "verb";
-			priority = 50;
-			tag = Tag;
-			color = consolecolor::cyan;
-		}
+		logtype_verbose();
 	};
 
 	struct logtype_debug : logtype
 	{
 		static const uint32_t Tag = 0x64656267;
-
-		logtype_debug()
-		{
-			enabled = false;
-			name = "debg";
-			priority = 50;
-			tag = Tag;
-			color = consolecolor::gray;
-		}
+		logtype_debug();
 	};
 
 	struct logtype_success : logtype
 	{
 		static const uint32_t Tag = 0x73756363;
-
-		logtype_success()
-		{
-			enabled = true;
-			name = "succ";
-			priority = 100;
-			tag = Tag;
-			color = consolecolor::green;
-		}
+		logtype_success();
 	};
 
 	// --------------------------------------------
@@ -390,3 +347,7 @@ namespace slog
 #endif
 
 }; // namespace
+
+#if _MSC_VER <= 1600
+	#pragma warning(pop)
+#endif

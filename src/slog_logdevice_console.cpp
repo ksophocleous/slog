@@ -26,7 +26,12 @@
 
 #include "slog/slog_logdevice_console.h"
 
-#pragma warning(disable:4996)
+#ifdef _MSC_VER
+	#if _MSC_VER <= 1600
+		#pragma warning(disable:4482)
+	#endif
+	#pragma warning(disable:4996)
+#endif
 
 #ifdef _WIN32
 #include <Windows.h>

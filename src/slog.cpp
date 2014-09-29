@@ -37,6 +37,10 @@
 #include <cstdlib>
 #include <cassert>
 
+#if _MSC_VER <= 1600
+	#pragma warning(disable:4482)
+#endif
+
 using namespace slog;
 
 namespace slog
@@ -170,6 +174,74 @@ std::string logconfig::formatmsg(const logtype& ltype, const std::string& msg)
 #pragma warning(disable:4996)
 
 /////////////////////////////////////////////////////////////////////
+
+logdevice::logdevice(std::string deviceName) : m_deviceName(std::move(deviceName))
+{
+	_prev_device = logconfig::print_functions[m_deviceName];
+	logconfig::print_functions[m_deviceName] = this;
+}
+
+logdevice::~logdevice()
+{
+	if (_prev_device)
+		logconfig::print_functions[m_deviceName] = _prev_device;
+	else
+		logconfig::print_functions.erase(m_deviceName);
+}
+
+/////////////////////////////////////////////////////////////////////
+
+logtype_info::logtype_info()
+{
+	name = "info";
+	priority = 100;
+	tag = Tag;
+	color = consolecolor::white;
+}
+
+logtype_warn::logtype_warn()
+{
+	name = "warn";
+	priority = 150;
+	tag = Tag;
+	color = consolecolor::yellow;
+}
+
+logtype_error::logtype_error()
+{
+	name = "errr";
+	priority = 200;
+	tag = Tag;
+	usestderr = true;
+	color = consolecolor::red;
+}
+
+logtype_verbose::logtype_verbose()
+{
+	enabled = false;
+	name = "verb";
+	priority = 50;
+	tag = Tag;
+	color = consolecolor::cyan;
+}
+
+logtype_debug::logtype_debug()
+{
+	enabled = false;
+	name = "debg";
+	priority = 50;
+	tag = Tag;
+	color = consolecolor::gray;
+}
+
+logtype_success::logtype_success()
+{
+	enabled = true;
+	name = "succ";
+	priority = 100;
+	tag = Tag;
+	color = consolecolor::green;
+}
 
 namespace slog
 {
