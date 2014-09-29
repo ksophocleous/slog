@@ -48,6 +48,7 @@ list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/include")
 list(APPEND compile_defines "VERSION_MAJOR=${version_major}")
 list(APPEND compile_defines "VERSION_MINOR=${version_minor}")
 list(APPEND compile_defines "VERSION_PATCH=${version_patch}")
+list(APPEND compile_defines "BUILDING_SLOG")
 
 if (NOT TARGET ${libname})
 	add_library(${libname} ${libtype} ${src} ${hdr_public})

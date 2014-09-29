@@ -380,10 +380,13 @@ namespace slog
 	typedef nooplogobj<logtype_success> success;
 #endif
 
+#ifndef BUILDING_SLOG
 	extern template class logobj<logtype_info>;
 	extern template class logobj<logtype_warn>;
 	extern template class logobj<logtype_error>;
 	extern template class logobj<logtype_verbose>;
 	extern template class logobj<logtype_debug>;
 	extern template class logobj<logtype_success>;
+#endif
+
 }; // namespace
