@@ -80,7 +80,7 @@ logdevice_console::logdevice_console() : logdevice("console")
 	// I don't know of an easy way to identify that the console is %comspec% or not
 	const char* envvar = getenv("TERM");
 	const std::string terminal = envvar ? envvar : "";
-	_xterm_console = (terminal.compare("xterm") == 0);
+	_xterm_console = (terminal.substr(0, 5).compare("xterm") == 0);
 
 #ifdef _WIN32
 	// even if have the env variable set, if we are launched from visual studio it is possible that video studio was launched from an xterm compatible
