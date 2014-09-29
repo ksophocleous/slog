@@ -384,5 +384,6 @@ namespace slog
 	extern template class logobj<logtype_warn>;
 	extern template class logobj<logtype_error>;
 	extern template class logobj<logtype_verbose>;
+	extern template class logobj<logtype_debug>;
 	extern template class logobj<logtype_success>;
 }; // namespace

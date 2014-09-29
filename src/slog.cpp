@@ -169,10 +169,14 @@ std::string logconfig::formatmsg(const logtype& ltype, const std::string& msg)
 
 #pragma warning(disable:4996)
 
-// template instantiation
-template class logobj<logtype_info>;
-template class logobj<logtype_warn>;
-template class logobj<logtype_error>;
-template class logobj<logtype_verbose>;
-template class logobj<logtype_debug>;
-template class logobj<logtype_success>;
+/////////////////////////////////////////////////////////////////////
+
+namespace slog
+{
+	template class logobj<logtype_info>;
+	template class logobj<logtype_warn>;
+	template class logobj<logtype_error>;
+	template class logobj<logtype_verbose>;
+	template class logobj<logtype_debug>;
+	template class logobj<logtype_success>;
+}
