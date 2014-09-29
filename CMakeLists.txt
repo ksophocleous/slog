@@ -7,7 +7,8 @@ set(version_major 0)
 set(version_minor 8)
 set(version_patch 5)
 
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(	"${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+	"${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "-std=c++11")
 endif()
 
@@ -60,7 +61,7 @@ if (NOT TARGET ${libname})
 
 	set(testname "slog_tests")
 	if(SLOG_BUILD_TESTS)
-		add_executable(${testname} EXCLUDE_FROM_ALL "tests/tests.cpp")
+		add_executable(${testname} "tests/tests.cpp")
 		target_link_libraries(${testname} ${libname})
 	endif()
 
