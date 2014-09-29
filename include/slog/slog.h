@@ -220,10 +220,18 @@ namespace slog
 					{
 						std::string line = logconfig::formatmsg(type, ss.str());
 
-						//for (auto& each : logconfig::print_functions)
+#if defined(_MSC_VER) && _MSC_VER <= 1600
 						for (auto& each = logconfig::print_functions.begin(); each != logconfig::print_functions.end(); ++each)
-							if (each->second)
-								each->second->writelogline(type, line);
+						{
+							auto pf = each->second;
+#else
+						for (auto& each : logconfig::print_functions)
+						{
+							auto pf = each.second;
+#endif
+							if (pf)
+								pf->writelogline(type, line);
+						}
 					}
 				}
 				catch (...)
