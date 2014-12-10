@@ -1,7 +1,11 @@
 cmake_minimum_required (VERSION 2.8)
 
 set(libname "slog")
+
 project(${libname} CXX)
+
+option(SLOG_BUILD_TESTS "Build tests" ON)
+option(SLOG_INSTALL_TARGET "Should generate install instructions" ON)
 
 set(version_major 0)
 set(version_minor 8)
@@ -25,8 +29,6 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-
-option(SLOG_BUILD_TESTS "Build tests" ON)
 
 set(libtype STATIC)
 
@@ -66,9 +68,11 @@ if (NOT TARGET ${libname})
 		target_link_libraries(${testname} ${libname})
 	endif()
 
-	install(TARGETS ${libname}
-		LIBRARY DESTINATION lib COMPONENT lib
-		ARCHIVE DESTINATION lib COMPONENT lib
-		RUNTIME DESTINATION bin COMPONENT bin
-		PUBLIC_HEADER DESTINATION include/slog COMPONENT dev)
+	if(SLOG_INSTALL_TARGET)
+		install(TARGETS ${libname}
+			LIBRARY DESTINATION lib COMPONENT lib
+			ARCHIVE DESTINATION lib COMPONENT lib
+			RUNTIME DESTINATION bin COMPONENT bin
+			PUBLIC_HEADER DESTINATION include/slog COMPONENT dev)
+	endif()
 endif()
